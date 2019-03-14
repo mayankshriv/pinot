@@ -18,6 +18,7 @@
     under the License.
 
 -->
+
 # Apache Pinot (incubating)
 
 [![Build Status](https://api.travis-ci.org/apache/incubator-pinot.svg?branch=master)](https://travis-ci.org/apache/incubator-pinot) [![codecov.io](https://codecov.io/github/linkedin/pinot/branch/master/graph/badge.svg)](https://codecov.io/github/linkedin/pinot) [![Join the chat at https://gitter.im/linkedin/pinot](https://badges.gitter.im/Join%20Chat.svg)](https://gitter.im/linkedin/pinot?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge) [![license](https://img.shields.io/github/license/linkedin/pinot.svg)](LICENSE)
