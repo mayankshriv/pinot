@@ -87,13 +87,13 @@ public class DefaultAggregationExecutor implements AggregationExecutor {
         // will be determined across tuples and not on a per column basis
         Map<String, BlockValSet> blockValSetMap = new HashMap<>();
         for (int j = 0; j < _expressions.length; j++) {
-          blockValSetMap.put(_expressions[j].toString(), transformBlock.getBlockValueSet(_expressions[j]));
+          blockValSetMap.put(_expressions[j].toString(), transformBlock.getBlockValueSet(_expressions[j].toString()));
         }
         function.aggregate(length, resultHolder, blockValSetMap);
       } else {
         // handle rest of the aggregate functions -- sum, min, max etc
         function.aggregate(length, resultHolder,
-            Collections.singletonMap(_expressions[i].toString(), transformBlock.getBlockValueSet(_expressions[i])));
+            Collections.singletonMap(_expressions[i].toString(), transformBlock.getBlockValueSet(_expressions[i].toString())));
       }
     }
   }

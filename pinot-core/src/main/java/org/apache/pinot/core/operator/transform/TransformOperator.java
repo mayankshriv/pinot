@@ -41,7 +41,7 @@ public class TransformOperator extends BaseOperator<TransformBlock> {
 
   private final ProjectionOperator _projectionOperator;
   private final Map<String, DataSource> _dataSourceMap;
-  private final Map<TransformExpressionTree, TransformFunction> _transformFunctionMap = new HashMap<>();
+  private final Map<String, TransformFunction> _transformFunctionMap = new HashMap<>();
 
   /**
    * Constructor for the class
@@ -54,7 +54,7 @@ public class TransformOperator extends BaseOperator<TransformBlock> {
     _dataSourceMap = projectionOperator.getDataSourceMap();
     for (TransformExpressionTree expression : expressions) {
       TransformFunction transformFunction = TransformFunctionFactory.get(expression, _dataSourceMap);
-      _transformFunctionMap.put(expression, transformFunction);
+      _transformFunctionMap.put(expression.toString(), transformFunction);
     }
   }
 

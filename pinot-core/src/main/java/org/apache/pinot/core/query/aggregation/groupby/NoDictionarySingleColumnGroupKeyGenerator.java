@@ -66,7 +66,7 @@ public class NoDictionarySingleColumnGroupKeyGenerator implements GroupKeyGenera
 
   @Override
   public void generateKeysForBlock(@Nonnull TransformBlock transformBlock, @Nonnull int[] groupKeys) {
-    BlockValSet blockValSet = transformBlock.getBlockValueSet(_groupByExpression);
+    BlockValSet blockValSet = transformBlock.getBlockValueSet(_groupByExpression.toString());
     int numDocs = transformBlock.getNumDocs();
 
     switch (_dataType) {

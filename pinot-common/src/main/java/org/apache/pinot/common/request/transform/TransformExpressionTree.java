@@ -47,12 +47,7 @@ public class TransformExpressionTree {
     return COMPILER.compileToExpressionTree(expression);
   }
 
-  /**
-   * Compiles the expression and serializes it back to standard format.
-   * <p>E.g. "  foo\t  ( bar  ('a'\t ,foobar(  b,  'c'\t, 123)  )   ,d  )\t" -> "foo(bar('a',foobar(b,'c','123')),d)"
-   * <p>The standard format expressions will be used in the broker response.
-   */
-  public static String standardizeExpression(String expression) {
+  private static String standardizeExpression(String expression) {
     return compileToExpressionTree(expression).toString();
   }
 
@@ -81,6 +76,7 @@ public class TransformExpressionTree {
   }
 
   private final ExpressionType _expressionType;
+  private final String _standardizedExpression; // Cache the standardized expression for toString().
   private String _value;
   private final List<TransformExpressionTree> _children;
 
@@ -104,6 +100,8 @@ public class TransformExpressionTree {
       throw new IllegalArgumentException(
           "Illegal AstNode type for TransformExpressionTree: " + root.getClass().getName());
     }
+
+    _standardizedExpression = toStandardizedString();
   }
 
   /**
@@ -198,12 +196,20 @@ public class TransformExpressionTree {
 
   @Override
   public String toString() {
+    return _standardizedExpression;
+  }
+
+  /**
+   * Returns standardized expression String for the TransformExpressionTree.
+   * <p>E.g. "  foo\t  ( bar  ('a'\t ,foobar(  b,  'c'\t, 123)  )   ,d  )\t" -> "foo(bar('a',foobar(b,'c','123')),d)"
+   */
+  private String toStandardizedString() {
     switch (_expressionType) {
       case FUNCTION:
         StringBuilder builder = new StringBuilder(_value).append('(');
         int numChildren = _children.size();
         for (int i = 0; i < numChildren; i++) {
-          builder.append(_children.get(i).toString());
+          builder.append(_children.get(i).toStandardizedString());
           if (i != numChildren - 1) {
             builder.append(',');
           } else {

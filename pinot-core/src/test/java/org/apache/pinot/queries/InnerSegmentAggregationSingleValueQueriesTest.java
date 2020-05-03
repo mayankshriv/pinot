@@ -47,6 +47,7 @@ public class InnerSegmentAggregationSingleValueQueriesTest extends BaseSingleVal
   @Test
   public void testAggregationOnly() {
     String query = "SELECT" + AGGREGATION + " FROM testTable";
+    query = "select sum(sub(add(column1, column3), column7)) from testTable";
 
     // Test query without filter.
     AggregationOperator aggregationOperator = getOperatorForQuery(query);
@@ -186,8 +187,8 @@ public class InnerSegmentAggregationSingleValueQueriesTest extends BaseSingleVal
 
     DataSchema dataSchema = distinctTable.getDataSchema();
     Assert.assertEquals(dataSchema.getColumnNames(), new String[]{"column1"});
-    Assert.assertEquals(dataSchema.getColumnDataTypes(),
-        new DataSchema.ColumnDataType[]{DataSchema.ColumnDataType.INT});
+    Assert
+        .assertEquals(dataSchema.getColumnDataTypes(), new DataSchema.ColumnDataType[]{DataSchema.ColumnDataType.INT});
 
     Iterator<Record> iterator = distinctTable.iterator();
     while (iterator.hasNext()) {

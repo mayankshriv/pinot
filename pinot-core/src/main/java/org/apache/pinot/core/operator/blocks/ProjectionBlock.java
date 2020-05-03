@@ -24,6 +24,7 @@ import org.apache.pinot.core.common.BlockDocIdSet;
 import org.apache.pinot.core.common.BlockDocIdValueSet;
 import org.apache.pinot.core.common.BlockMetadata;
 import org.apache.pinot.core.common.BlockValSet;
+import org.apache.pinot.core.common.DataBlock;
 import org.apache.pinot.core.common.DataBlockCache;
 import org.apache.pinot.core.operator.docvalsets.ProjectionBlockValSet;
 
@@ -32,7 +33,7 @@ import org.apache.pinot.core.operator.docvalsets.ProjectionBlockValSet;
  * ProjectionBlock holds a column name to Block Map.
  * It provides DocIdSetBlock for a given column.
  */
-public class ProjectionBlock implements Block {
+public class ProjectionBlock implements DataBlock {
   private final Map<String, Block> _blockMap;
   private final DocIdSetBlock _docIdSetBlock;
   private final DataBlockCache _dataBlockCache;
@@ -63,6 +64,7 @@ public class ProjectionBlock implements Block {
     throw new UnsupportedOperationException();
   }
 
+  @Override
   public BlockValSet getBlockValueSet(String column) {
     BlockMetadata blockMetadata = _blockMap.get(column).getMetadata();
     return new ProjectionBlockValSet(_dataBlockCache, column, blockMetadata.getDataType(),
@@ -73,6 +75,7 @@ public class ProjectionBlock implements Block {
     return _docIdSetBlock;
   }
 
+  @Override
   public int getNumDocs() {
     return _docIdSetBlock.getSearchableLength();
   }

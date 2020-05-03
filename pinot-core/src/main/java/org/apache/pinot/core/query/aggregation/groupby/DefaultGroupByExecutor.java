@@ -162,7 +162,7 @@ public class DefaultGroupByExecutor implements GroupByExecutor {
     } else {
       TransformExpressionTree aggregationExpression = _aggregationExpressions[functionIndex];
       Map<String, BlockValSet> blockValSetMap = Collections
-          .singletonMap(aggregationExpression.toString(), transformBlock.getBlockValueSet(aggregationExpression));
+          .singletonMap(aggregationExpression.toString(), transformBlock.getBlockValueSet(aggregationExpression.toString()));
       if (_hasMVGroupByExpression) {
         function.aggregateGroupByMV(length, _mvGroupKeys, resultHolder, blockValSetMap);
       } else {

@@ -147,7 +147,7 @@ public class SelectionOrderByOperator extends BaseOperator<IntermediateResultsBl
       BlockValSet[] blockValSets = new BlockValSet[numExpressions];
       for (int i = 0; i < numExpressions; i++) {
         TransformExpressionTree expression = _expressions.get(i);
-        blockValSets[i] = transformBlock.getBlockValueSet(expression);
+        blockValSets[i] = transformBlock.getBlockValueSet(expression.toString());
       }
       RowBasedBlockValueFetcher blockValueFetcher = new RowBasedBlockValueFetcher(blockValSets);
 
