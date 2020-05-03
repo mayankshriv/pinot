@@ -19,10 +19,9 @@
 package org.apache.pinot.core.query.aggregation.function;
 
 import com.clearspring.analytics.stream.cardinality.HyperLogLog;
-import java.util.Map;
 import org.apache.pinot.common.function.AggregationFunctionType;
 import org.apache.pinot.common.utils.DataSchema.ColumnDataType;
-import org.apache.pinot.core.common.BlockValSet;
+import org.apache.pinot.core.common.DataBlock;
 import org.apache.pinot.core.query.aggregation.AggregationResultHolder;
 import org.apache.pinot.core.query.aggregation.function.customobject.SerializedHLL;
 import org.apache.pinot.core.query.aggregation.groupby.GroupByResultHolder;
@@ -78,22 +77,20 @@ public class DistinctCountRawHLLAggregationFunction implements AggregationFuncti
   }
 
   @Override
-  public void aggregate(int length, AggregationResultHolder aggregationResultHolder,
-      Map<String, BlockValSet> blockValSetMap) {
-    _distinctCountHLLAggregationFunction.aggregate(length, aggregationResultHolder, blockValSetMap);
+  public void aggregate(int length, AggregationResultHolder aggregationResultHolder, DataBlock dataBlock) {
+    _distinctCountHLLAggregationFunction.aggregate(length, aggregationResultHolder, dataBlock);
   }
 
   @Override
   public void aggregateGroupBySV(int length, int[] groupKeyArray, GroupByResultHolder groupByResultHolder,
-      Map<String, BlockValSet> blockValSetMap) {
-    _distinctCountHLLAggregationFunction.aggregateGroupBySV(length, groupKeyArray, groupByResultHolder, blockValSetMap);
+      DataBlock dataBlock) {
+    _distinctCountHLLAggregationFunction.aggregateGroupBySV(length, groupKeyArray, groupByResultHolder, dataBlock);
   }
 
   @Override
   public void aggregateGroupByMV(int length, int[][] groupKeysArray, GroupByResultHolder groupByResultHolder,
-      Map<String, BlockValSet> blockValSetMap) {
-    _distinctCountHLLAggregationFunction
-        .aggregateGroupByMV(length, groupKeysArray, groupByResultHolder, blockValSetMap);
+      DataBlock dataBlock) {
+    _distinctCountHLLAggregationFunction.aggregateGroupByMV(length, groupKeysArray, groupByResultHolder, dataBlock);
   }
 
   @Override

@@ -74,7 +74,7 @@ public class TransformOperator extends BaseOperator<TransformBlock> {
    * @return Transform result metadata
    */
   public TransformResultMetadata getResultMetadata(TransformExpressionTree expression) {
-    return _transformFunctionMap.get(expression).getResultMetadata();
+    return _transformFunctionMap.get(expression.toString()).getResultMetadata();
   }
 
   /**
@@ -84,7 +84,7 @@ public class TransformOperator extends BaseOperator<TransformBlock> {
    * @return Dictionary
    */
   public Dictionary getDictionary(TransformExpressionTree expression) {
-    return _transformFunctionMap.get(expression).getDictionary();
+    return _transformFunctionMap.get(expression.toString()).getDictionary();
   }
 
   @Override

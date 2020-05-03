@@ -18,16 +18,15 @@
  */
 package org.apache.pinot.core.query.aggregation.function;
 
-import com.google.common.base.Preconditions;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import org.apache.commons.collections.CollectionUtils;
 import org.apache.pinot.common.function.AggregationFunctionType;
 import org.apache.pinot.common.request.SelectionSort;
 import org.apache.pinot.common.utils.DataSchema;
 import org.apache.pinot.common.utils.DataSchema.ColumnDataType;
 import org.apache.pinot.core.common.BlockValSet;
+import org.apache.pinot.core.common.DataBlock;
 import org.apache.pinot.core.common.RowBasedBlockValueFetcher;
 import org.apache.pinot.core.data.table.Record;
 import org.apache.pinot.core.query.aggregation.AggregationResultHolder;
@@ -88,24 +87,20 @@ public class DistinctAggregationFunction implements AggregationFunction<Distinct
   }
 
   @Override
-  public void aggregate(int length, AggregationResultHolder aggregationResultHolder,
-      Map<String, BlockValSet> blockValSetMap) {
+  public void aggregate(int length, AggregationResultHolder aggregationResultHolder, DataBlock dataBlock) {
     int numColumns = _columns.length;
-    int numBlockValSets = blockValSetMap.size();
-    Preconditions.checkState(numBlockValSets == numColumns, "Size mismatch: numBlockValSets = %s, numColumns = %s",
-        numBlockValSets, numColumns);
 
     DistinctTable distinctTable = aggregationResultHolder.getResult();
     BlockValSet[] blockValSets = new BlockValSet[numColumns];
 
     for (int i = 0; i < numColumns; i++) {
-      blockValSets[i] = blockValSetMap.get(_columns[i]);
+      blockValSets[i] = dataBlock.getBlockValueSet(_columns[i]);
     }
 
     if (distinctTable == null) {
       ColumnDataType[] columnDataTypes = new ColumnDataType[numColumns];
       for (int i = 0; i < numColumns; i++) {
-        columnDataTypes[i] = ColumnDataType.fromDataTypeSV(blockValSetMap.get(_columns[i]).getValueType());
+        columnDataTypes[i] = ColumnDataType.fromDataTypeSV(dataBlock.getBlockValueSet(_columns[i]).getValueType());
       }
       DataSchema dataSchema = new DataSchema(_columns, columnDataTypes);
       distinctTable = new DistinctTable(dataSchema, _orderBy, _capacity);
@@ -173,13 +168,13 @@ public class DistinctAggregationFunction implements AggregationFunction<Distinct
 
   @Override
   public void aggregateGroupBySV(int length, int[] groupKeyArray, GroupByResultHolder groupByResultHolder,
-      Map<String, BlockValSet> blockValSetMap) {
+      DataBlock dataBlock) {
     throw new UnsupportedOperationException("Operation not supported for DISTINCT aggregation function");
   }
 
   @Override
   public void aggregateGroupByMV(int length, int[][] groupKeysArray, GroupByResultHolder groupByResultHolder,
-      Map<String, BlockValSet> blockValSetMap) {
+      DataBlock dataBlock) {
     throw new UnsupportedOperationException("Operation not supported for DISTINCT aggregation function");
   }
 

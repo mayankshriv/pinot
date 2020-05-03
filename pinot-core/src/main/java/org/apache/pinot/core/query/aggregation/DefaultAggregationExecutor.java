@@ -78,22 +78,17 @@ public class DefaultAggregationExecutor implements AggregationExecutor {
       AggregationResultHolder resultHolder = _resultHolders[i];
       if (function.getType() == AggregationFunctionType.COUNT) {
         // handle count(*) function
-        function.aggregate(length, resultHolder, Collections.emptyMap());
+        function.aggregate(length, resultHolder, null);
       } else if (function.getType() == AggregationFunctionType.DISTINCT) {
         // handle distinct (col1, col2..) function
         // unlike other aggregate functions, distinct can work on multiple columns
         // so we get all the projected columns (ProjectionBlockValSet) from TransformBlock
         // for each column and then pass them over to distinct function since the uniqueness
         // will be determined across tuples and not on a per column basis
-        Map<String, BlockValSet> blockValSetMap = new HashMap<>();
-        for (int j = 0; j < _expressions.length; j++) {
-          blockValSetMap.put(_expressions[j].toString(), transformBlock.getBlockValueSet(_expressions[j].toString()));
-        }
-        function.aggregate(length, resultHolder, blockValSetMap);
+        function.aggregate(length, resultHolder, transformBlock);
       } else {
         // handle rest of the aggregate functions -- sum, min, max etc
-        function.aggregate(length, resultHolder,
-            Collections.singletonMap(_expressions[i].toString(), transformBlock.getBlockValueSet(_expressions[i].toString())));
+        function.aggregate(length, resultHolder, transformBlock);
       }
     }
   }

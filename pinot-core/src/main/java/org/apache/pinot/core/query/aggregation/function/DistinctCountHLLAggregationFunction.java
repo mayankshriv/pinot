@@ -20,10 +20,10 @@ package org.apache.pinot.core.query.aggregation.function;
 
 import com.clearspring.analytics.stream.cardinality.HyperLogLog;
 import com.google.common.base.Preconditions;
-import java.util.Map;
 import org.apache.pinot.common.function.AggregationFunctionType;
 import org.apache.pinot.common.utils.DataSchema.ColumnDataType;
 import org.apache.pinot.core.common.BlockValSet;
+import org.apache.pinot.core.common.DataBlock;
 import org.apache.pinot.core.common.ObjectSerDeUtils;
 import org.apache.pinot.core.query.aggregation.AggregationResultHolder;
 import org.apache.pinot.core.query.aggregation.ObjectAggregationResultHolder;
@@ -76,8 +76,8 @@ public class DistinctCountHLLAggregationFunction implements AggregationFunction<
   }
 
   @Override
-  public void aggregate(int length, AggregationResultHolder aggregationResultHolder, Map<String, BlockValSet> blockValSetMap) {
-    BlockValSet blockValSet = blockValSetMap.get(_column);
+  public void aggregate(int length, AggregationResultHolder aggregationResultHolder, DataBlock dataBlock) {
+    BlockValSet blockValSet = dataBlock.getBlockValueSet(_column);
     DataType valueType = blockValSet.getValueType();
 
     if (valueType != DataType.BYTES) {
@@ -141,8 +141,8 @@ public class DistinctCountHLLAggregationFunction implements AggregationFunction<
 
   @Override
   public void aggregateGroupBySV(int length, int[] groupKeyArray, GroupByResultHolder groupByResultHolder,
-      Map<String, BlockValSet> blockValSetMap) {
-    BlockValSet blockValSet = blockValSetMap.get(_column);
+      DataBlock dataBlock) {
+    BlockValSet blockValSet = dataBlock.getBlockValueSet(_column);
     DataType valueType = blockValSet.getValueType();
 
     switch (valueType) {
@@ -201,8 +201,8 @@ public class DistinctCountHLLAggregationFunction implements AggregationFunction<
 
   @Override
   public void aggregateGroupByMV(int length, int[][] groupKeysArray, GroupByResultHolder groupByResultHolder,
-      Map<String, BlockValSet> blockValSetMap) {
-    BlockValSet blockValSet = blockValSetMap.get(_column);
+      DataBlock dataBlock) {
+    BlockValSet blockValSet = dataBlock.getBlockValueSet(_column);
     DataType valueType = blockValSet.getValueType();
 
     switch (valueType) {

@@ -47,7 +47,6 @@ public class InnerSegmentAggregationSingleValueQueriesTest extends BaseSingleVal
   @Test
   public void testAggregationOnly() {
     String query = "SELECT" + AGGREGATION + " FROM testTable";
-    query = "select sum(sub(add(column1, column3), column7)) from testTable";
 
     // Test query without filter.
     AggregationOperator aggregationOperator = getOperatorForQuery(query);

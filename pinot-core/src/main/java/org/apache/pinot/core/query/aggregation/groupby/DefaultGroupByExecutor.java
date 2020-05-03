@@ -155,18 +155,15 @@ public class DefaultGroupByExecutor implements GroupByExecutor {
 
     if (function.getType() == AggregationFunctionType.COUNT) {
       if (_hasMVGroupByExpression) {
-        function.aggregateGroupByMV(length, _mvGroupKeys, resultHolder, Collections.emptyMap());
+        function.aggregateGroupByMV(length, _mvGroupKeys, resultHolder, null);
       } else {
-        function.aggregateGroupBySV(length, _svGroupKeys, resultHolder, Collections.emptyMap());
+        function.aggregateGroupBySV(length, _svGroupKeys, resultHolder, null);
       }
     } else {
-      TransformExpressionTree aggregationExpression = _aggregationExpressions[functionIndex];
-      Map<String, BlockValSet> blockValSetMap = Collections
-          .singletonMap(aggregationExpression.toString(), transformBlock.getBlockValueSet(aggregationExpression.toString()));
       if (_hasMVGroupByExpression) {
-        function.aggregateGroupByMV(length, _mvGroupKeys, resultHolder, blockValSetMap);
+        function.aggregateGroupByMV(length, _mvGroupKeys, resultHolder, transformBlock);
       } else {
-        function.aggregateGroupBySV(length, _svGroupKeys, resultHolder, blockValSetMap);
+        function.aggregateGroupBySV(length, _svGroupKeys, resultHolder, transformBlock);
       }
     }
   }

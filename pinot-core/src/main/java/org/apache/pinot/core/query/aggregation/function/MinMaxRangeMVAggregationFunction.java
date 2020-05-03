@@ -18,9 +18,8 @@
  */
 package org.apache.pinot.core.query.aggregation.function;
 
-import java.util.Map;
 import org.apache.pinot.common.function.AggregationFunctionType;
-import org.apache.pinot.core.common.BlockValSet;
+import org.apache.pinot.core.common.DataBlock;
 import org.apache.pinot.core.query.aggregation.AggregationResultHolder;
 import org.apache.pinot.core.query.aggregation.groupby.GroupByResultHolder;
 
@@ -46,8 +45,8 @@ public class MinMaxRangeMVAggregationFunction extends MinMaxRangeAggregationFunc
   }
 
   @Override
-  public void aggregate(int length, AggregationResultHolder aggregationResultHolder, Map<String, BlockValSet> blockValSetMap) {
-    double[][] valuesArray = blockValSetMap.get(_column).getDoubleValuesMV();
+  public void aggregate(int length, AggregationResultHolder aggregationResultHolder, DataBlock dataBlock) {
+    double[][] valuesArray = dataBlock.getBlockValueSet(_column).getDoubleValuesMV();
     double min = Double.POSITIVE_INFINITY;
     double max = Double.NEGATIVE_INFINITY;
     for (int i = 0; i < length; i++) {
@@ -66,8 +65,8 @@ public class MinMaxRangeMVAggregationFunction extends MinMaxRangeAggregationFunc
 
   @Override
   public void aggregateGroupBySV(int length, int[] groupKeyArray, GroupByResultHolder groupByResultHolder,
-      Map<String, BlockValSet> blockValSetMap) {
-    double[][] valuesArray = blockValSetMap.get(_column).getDoubleValuesMV();
+      DataBlock dataBlock) {
+    double[][] valuesArray = dataBlock.getBlockValueSet(_column).getDoubleValuesMV();
     for (int i = 0; i < length; i++) {
       aggregateOnGroupKey(groupKeyArray[i], groupByResultHolder, valuesArray[i]);
     }
@@ -75,8 +74,8 @@ public class MinMaxRangeMVAggregationFunction extends MinMaxRangeAggregationFunc
 
   @Override
   public void aggregateGroupByMV(int length, int[][] groupKeysArray, GroupByResultHolder groupByResultHolder,
-      Map<String, BlockValSet> blockValSetMap) {
-    double[][] valuesArray = blockValSetMap.get(_column).getDoubleValuesMV();
+      DataBlock dataBlock) {
+    double[][] valuesArray = dataBlock.getBlockValueSet(_column).getDoubleValuesMV();
     for (int i = 0; i < length; i++) {
       double[] values = valuesArray[i];
       for (int groupKey : groupKeysArray[i]) {

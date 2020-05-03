@@ -64,19 +64,10 @@ public class StarTreeGroupByExecutor extends DefaultGroupByExecutor {
     AggregationFunction function = _functions[functionIndex];
     GroupByResultHolder resultHolder = _resultHolders[functionIndex];
 
-    BlockValSet blockValueSet;
-    if (function.getType() == AggregationFunctionType.COUNT) {
-      blockValueSet = transformBlock.getBlockValueSet(AggregationFunctionColumnPair.COUNT_STAR_COLUMN_NAME);
-    } else {
-      TransformExpressionTree aggregationExpression = _aggregationExpressions[functionIndex];
-      blockValueSet = transformBlock.getBlockValueSet(aggregationExpression.getValue());
-    }
-
-    Map<String, BlockValSet> blockValSetMap = Collections.singletonMap(_functionArgs[functionIndex], blockValueSet);
     if (_hasMVGroupByExpression) {
-      function.aggregateGroupByMV(length, _mvGroupKeys, resultHolder, blockValSetMap);
+      function.aggregateGroupByMV(length, _mvGroupKeys, resultHolder, transformBlock);
     } else {
-      function.aggregateGroupBySV(length, _svGroupKeys, resultHolder, blockValSetMap);
+      function.aggregateGroupBySV(length, _svGroupKeys, resultHolder, transformBlock);
     }
   }
 }

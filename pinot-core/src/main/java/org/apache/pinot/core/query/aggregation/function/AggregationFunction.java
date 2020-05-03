@@ -18,10 +18,9 @@
  */
 package org.apache.pinot.core.query.aggregation.function;
 
-import java.util.Map;
 import org.apache.pinot.common.function.AggregationFunctionType;
 import org.apache.pinot.common.utils.DataSchema.ColumnDataType;
-import org.apache.pinot.core.common.BlockValSet;
+import org.apache.pinot.core.common.DataBlock;
 import org.apache.pinot.core.query.aggregation.AggregationResultHolder;
 import org.apache.pinot.core.query.aggregation.groupby.GroupByResultHolder;
 
@@ -68,21 +67,21 @@ public interface AggregationFunction<IntermediateResult, FinalResult extends Com
   /**
    * Performs aggregation on the given block value sets (aggregation only).
    */
-  void aggregate(int length, AggregationResultHolder aggregationResultHolder, Map<String, BlockValSet> blockValSetMap);
+  void aggregate(int length, AggregationResultHolder aggregationResultHolder, DataBlock dataBlock);
 
   /**
    * Performs aggregation on the given group key array and block value sets (aggregation group-by on single-value
    * columns).
    */
   void aggregateGroupBySV(int length, int[] groupKeyArray, GroupByResultHolder groupByResultHolder,
-      Map<String, BlockValSet> blockValSets);
+      DataBlock dataBlock);
 
   /**
    * Performs aggregation on the given group keys array and block value sets (aggregation group-by on multi-value
    * columns).
    */
   void aggregateGroupByMV(int length, int[][] groupKeysArray, GroupByResultHolder groupByResultHolder,
-      Map<String, BlockValSet> blockValSets);
+      DataBlock dataBlock);
 
   /**
    * Extracts the intermediate result from the aggregation result holder (aggregation only).

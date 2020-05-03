@@ -19,9 +19,8 @@
 package org.apache.pinot.core.query.aggregation.function;
 
 import java.util.List;
-import java.util.Map;
 import org.apache.pinot.common.function.AggregationFunctionType;
-import org.apache.pinot.core.common.BlockValSet;
+import org.apache.pinot.core.common.DataBlock;
 import org.apache.pinot.core.query.aggregation.AggregationResultHolder;
 import org.apache.pinot.core.query.aggregation.function.customobject.QuantileDigest;
 import org.apache.pinot.core.query.aggregation.groupby.GroupByResultHolder;
@@ -63,8 +62,8 @@ public class PercentileEstMVAggregationFunction extends PercentileEstAggregation
   }
 
   @Override
-  public void aggregate(int length, AggregationResultHolder aggregationResultHolder, Map<String, BlockValSet> blockValSetMap) {
-    long[][] valuesArray = blockValSetMap.get(_column).getLongValuesMV();
+  public void aggregate(int length, AggregationResultHolder aggregationResultHolder, DataBlock dataBlock) {
+    long[][] valuesArray = dataBlock.getBlockValueSet(_column).getLongValuesMV();
     QuantileDigest quantileDigest = getDefaultQuantileDigest(aggregationResultHolder);
     for (int i = 0; i < length; i++) {
       for (long value : valuesArray[i]) {
@@ -75,8 +74,8 @@ public class PercentileEstMVAggregationFunction extends PercentileEstAggregation
 
   @Override
   public void aggregateGroupBySV(int length, int[] groupKeyArray, GroupByResultHolder groupByResultHolder,
-      Map<String, BlockValSet> blockValSetMap) {
-    long[][] valuesArray = blockValSetMap.get(_column).getLongValuesMV();
+      DataBlock dataBlock) {
+    long[][] valuesArray = dataBlock.getBlockValueSet(_column).getLongValuesMV();
     for (int i = 0; i < length; i++) {
       QuantileDigest quantileDigest = getDefaultQuantileDigest(groupByResultHolder, groupKeyArray[i]);
       for (long value : valuesArray[i]) {
@@ -87,8 +86,8 @@ public class PercentileEstMVAggregationFunction extends PercentileEstAggregation
 
   @Override
   public void aggregateGroupByMV(int length, int[][] groupKeysArray, GroupByResultHolder groupByResultHolder,
-      Map<String, BlockValSet> blockValSetMap) {
-    long[][] valuesArray = blockValSetMap.get(_column).getLongValuesMV();
+      DataBlock dataBlock) {
+    long[][] valuesArray = dataBlock.getBlockValueSet(_column).getLongValuesMV();
     for (int i = 0; i < length; i++) {
       long[] values = valuesArray[i];
       for (int groupKey : groupKeysArray[i]) {

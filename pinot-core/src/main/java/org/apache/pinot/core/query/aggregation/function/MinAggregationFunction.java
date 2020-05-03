@@ -18,10 +18,9 @@
  */
 package org.apache.pinot.core.query.aggregation.function;
 
-import java.util.Map;
 import org.apache.pinot.common.function.AggregationFunctionType;
 import org.apache.pinot.common.utils.DataSchema.ColumnDataType;
-import org.apache.pinot.core.common.BlockValSet;
+import org.apache.pinot.core.common.DataBlock;
 import org.apache.pinot.core.query.aggregation.AggregationResultHolder;
 import org.apache.pinot.core.query.aggregation.DoubleAggregationResultHolder;
 import org.apache.pinot.core.query.aggregation.groupby.DoubleGroupByResultHolder;
@@ -55,6 +54,7 @@ public class MinAggregationFunction implements AggregationFunction<Double, Doubl
   public String getResultColumnName() {
     return getType().getName().toLowerCase() + "(" + _column + ")";
   }
+
   @Override
   public void accept(AggregationFunctionVisitorBase visitor) {
     visitor.visit(this);
@@ -71,8 +71,8 @@ public class MinAggregationFunction implements AggregationFunction<Double, Doubl
   }
 
   @Override
-  public void aggregate(int length, AggregationResultHolder aggregationResultHolder, Map<String, BlockValSet> blockValSetMap) {
-    double[] valueArray = blockValSetMap.get(_column).getDoubleValuesSV();
+  public void aggregate(int length, AggregationResultHolder aggregationResultHolder, DataBlock dataBlock) {
+    double[] valueArray = dataBlock.getBlockValueSet(_column).getDoubleValuesSV();
     double min = aggregationResultHolder.getDoubleResult();
     for (int i = 0; i < length; i++) {
       double value = valueArray[i];
@@ -85,8 +85,8 @@ public class MinAggregationFunction implements AggregationFunction<Double, Doubl
 
   @Override
   public void aggregateGroupBySV(int length, int[] groupKeyArray, GroupByResultHolder groupByResultHolder,
-      Map<String, BlockValSet> blockValSetMap) {
-    double[] valueArray = blockValSetMap.get(_column).getDoubleValuesSV();
+      DataBlock dataBlock) {
+    double[] valueArray = dataBlock.getBlockValueSet(_column).getDoubleValuesSV();
     for (int i = 0; i < length; i++) {
       double value = valueArray[i];
       int groupKey = groupKeyArray[i];
@@ -98,8 +98,8 @@ public class MinAggregationFunction implements AggregationFunction<Double, Doubl
 
   @Override
   public void aggregateGroupByMV(int length, int[][] groupKeysArray, GroupByResultHolder groupByResultHolder,
-      Map<String, BlockValSet> blockValSetMap) {
-    double[] valueArray = blockValSetMap.get(_column).getDoubleValuesSV();
+      DataBlock dataBlock) {
+    double[] valueArray = dataBlock.getBlockValueSet(_column).getDoubleValuesSV();
     for (int i = 0; i < length; i++) {
       double value = valueArray[i];
       for (int groupKey : groupKeysArray[i]) {

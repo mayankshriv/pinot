@@ -20,10 +20,10 @@ package org.apache.pinot.core.query.aggregation.function;
 
 import com.google.common.base.Preconditions;
 import java.util.List;
-import java.util.Map;
 import org.apache.pinot.common.function.AggregationFunctionType;
 import org.apache.pinot.common.utils.DataSchema.ColumnDataType;
 import org.apache.pinot.core.common.BlockValSet;
+import org.apache.pinot.core.common.DataBlock;
 import org.apache.pinot.core.common.ObjectSerDeUtils;
 import org.apache.pinot.core.query.aggregation.AggregationResultHolder;
 import org.apache.pinot.core.query.aggregation.ObjectAggregationResultHolder;
@@ -87,8 +87,8 @@ public class PercentileEstAggregationFunction implements AggregationFunction<Qua
   }
 
   @Override
-  public void aggregate(int length, AggregationResultHolder aggregationResultHolder, Map<String, BlockValSet> blockValSetMap) {
-    BlockValSet blockValSet = blockValSetMap.get(_column);
+  public void aggregate(int length, AggregationResultHolder aggregationResultHolder, DataBlock dataBlock) {
+    BlockValSet blockValSet = dataBlock.getBlockValueSet(_column);
     if (blockValSet.getValueType() != DataType.BYTES) {
       long[] longValues = blockValSet.getLongValuesSV();
       QuantileDigest quantileDigest = getDefaultQuantileDigest(aggregationResultHolder);
@@ -115,8 +115,8 @@ public class PercentileEstAggregationFunction implements AggregationFunction<Qua
 
   @Override
   public void aggregateGroupBySV(int length, int[] groupKeyArray, GroupByResultHolder groupByResultHolder,
-      Map<String, BlockValSet> blockValSetMap) {
-    BlockValSet blockValSet = blockValSetMap.get(_column);
+      DataBlock dataBlock) {
+    BlockValSet blockValSet = dataBlock.getBlockValueSet(_column);
     if (blockValSet.getValueType() != DataType.BYTES) {
       long[] longValues = blockValSet.getLongValuesSV();
       for (int i = 0; i < length; i++) {
@@ -140,8 +140,8 @@ public class PercentileEstAggregationFunction implements AggregationFunction<Qua
 
   @Override
   public void aggregateGroupByMV(int length, int[][] groupKeysArray, GroupByResultHolder groupByResultHolder,
-      Map<String, BlockValSet> blockValSetMap) {
-    BlockValSet blockValSet = blockValSetMap.get(_column);
+      DataBlock dataBlock) {
+    BlockValSet blockValSet = dataBlock.getBlockValueSet(_column);
     if (blockValSet.getValueType() != DataType.BYTES) {
       long[] longValues = blockValSet.getLongValuesSV();
       for (int i = 0; i < length; i++) {
