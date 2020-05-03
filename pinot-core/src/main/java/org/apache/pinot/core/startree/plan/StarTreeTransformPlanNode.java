@@ -19,10 +19,12 @@
 package org.apache.pinot.core.startree.plan;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nullable;
+import org.apache.pinot.common.function.AggregationFunctionType;
 import org.apache.pinot.common.request.transform.TransformExpressionTree;
 import org.apache.pinot.common.utils.request.FilterQueryTree;
 import org.apache.pinot.core.operator.transform.TransformOperator;
@@ -44,8 +46,11 @@ public class StarTreeTransformPlanNode implements PlanNode {
       @Nullable Set<TransformExpressionTree> groupByExpressions, @Nullable FilterQueryTree rootFilterNode,
       @Nullable Map<String, String> debugOptions) {
     Set<String> projectionColumns = new HashSet<>();
+    Map<String, String> aggregationColumnNameMap = new HashMap<>();
     for (AggregationFunctionColumnPair aggregationFunctionColumnPair : aggregationFunctionColumnPairs) {
-      projectionColumns.add(aggregationFunctionColumnPair.toColumnName());
+      String aggregationColumnName = aggregationFunctionColumnPair.toColumnName();
+      projectionColumns.add(aggregationColumnName);
+      aggregationColumnNameMap.put(aggregationColumnName, aggregationFunctionColumnPair.getColumn());
     }
     Set<String> groupByColumns;
     if (groupByExpressions != null) {
@@ -55,12 +60,16 @@ public class StarTreeTransformPlanNode implements PlanNode {
         groupByExpression.getColumns(groupByColumns);
       }
       projectionColumns.addAll(groupByColumns);
+      for (String groupByColumn : groupByColumns) {
+        aggregationColumnNameMap.put(groupByColumn, groupByColumn);
+      }
     } else {
       _groupByExpressions = Collections.emptySet();
       groupByColumns = null;
     }
     _starTreeProjectionPlanNode =
-        new StarTreeProjectionPlanNode(starTreeV2, projectionColumns, rootFilterNode, groupByColumns, debugOptions);
+        new StarTreeProjectionPlanNode(starTreeV2, projectionColumns, aggregationColumnNameMap, rootFilterNode,
+            groupByColumns, debugOptions);
   }
 
   @Override

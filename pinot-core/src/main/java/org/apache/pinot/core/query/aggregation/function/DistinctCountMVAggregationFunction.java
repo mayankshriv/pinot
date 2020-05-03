@@ -19,9 +19,9 @@
 package org.apache.pinot.core.query.aggregation.function;
 
 import it.unimi.dsi.fastutil.ints.IntOpenHashSet;
-import java.util.Map;
 import org.apache.pinot.common.function.AggregationFunctionType;
 import org.apache.pinot.core.common.BlockValSet;
+import org.apache.pinot.core.common.DataBlock;
 import org.apache.pinot.core.query.aggregation.AggregationResultHolder;
 import org.apache.pinot.core.query.aggregation.groupby.GroupByResultHolder;
 import org.apache.pinot.spi.data.FieldSpec;
@@ -48,10 +48,10 @@ public class DistinctCountMVAggregationFunction extends DistinctCountAggregation
   }
 
   @Override
-  public void aggregate(int length, AggregationResultHolder aggregationResultHolder, Map<String, BlockValSet> blockValSetMap) {
+  public void aggregate(int length, AggregationResultHolder aggregationResultHolder, DataBlock dataBlock) {
     IntOpenHashSet valueSet = getValueSet(aggregationResultHolder);
 
-    BlockValSet blockValSet = blockValSetMap.get(_column);
+    BlockValSet blockValSet = dataBlock.getBlockValueSet(_column);
     FieldSpec.DataType valueType = blockValSet.getValueType();
     switch (valueType) {
       case INT:
@@ -100,8 +100,8 @@ public class DistinctCountMVAggregationFunction extends DistinctCountAggregation
 
   @Override
   public void aggregateGroupBySV(int length, int[] groupKeyArray, GroupByResultHolder groupByResultHolder,
-      Map<String, BlockValSet> blockValSetMap) {
-    BlockValSet blockValSet = blockValSetMap.get(_column);
+      DataBlock dataBlock) {
+    BlockValSet blockValSet = dataBlock.getBlockValueSet(_column);
     FieldSpec.DataType valueType = blockValSet.getValueType();
 
     switch (valueType) {
@@ -157,8 +157,8 @@ public class DistinctCountMVAggregationFunction extends DistinctCountAggregation
 
   @Override
   public void aggregateGroupByMV(int length, int[][] groupKeysArray, GroupByResultHolder groupByResultHolder,
-      Map<String, BlockValSet> blockValSetMap) {
-    BlockValSet blockValSet = blockValSetMap.get(_column);
+      DataBlock dataBlock) {
+    BlockValSet blockValSet = dataBlock.getBlockValueSet(_column);
     FieldSpec.DataType valueType = blockValSet.getValueType();
 
     switch (valueType) {

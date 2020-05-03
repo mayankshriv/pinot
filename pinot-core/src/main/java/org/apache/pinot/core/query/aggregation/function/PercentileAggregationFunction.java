@@ -22,10 +22,9 @@ import com.google.common.base.Preconditions;
 import it.unimi.dsi.fastutil.doubles.DoubleArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import org.apache.pinot.common.function.AggregationFunctionType;
 import org.apache.pinot.common.utils.DataSchema.ColumnDataType;
-import org.apache.pinot.core.common.BlockValSet;
+import org.apache.pinot.core.common.DataBlock;
 import org.apache.pinot.core.query.aggregation.AggregationResultHolder;
 import org.apache.pinot.core.query.aggregation.ObjectAggregationResultHolder;
 import org.apache.pinot.core.query.aggregation.groupby.GroupByResultHolder;
@@ -86,9 +85,9 @@ public class PercentileAggregationFunction implements AggregationFunction<Double
   }
 
   @Override
-  public void aggregate(int length, AggregationResultHolder aggregationResultHolder, Map<String, BlockValSet> blockValSetMap) {
+  public void aggregate(int length, AggregationResultHolder aggregationResultHolder, DataBlock dataBlock) {
     DoubleArrayList valueList = getValueList(aggregationResultHolder);
-    double[] valueArray = blockValSetMap.get(_column).getDoubleValuesSV();
+    double[] valueArray = dataBlock.getBlockValueSet(_column).getDoubleValuesSV();
     for (int i = 0; i < length; i++) {
       valueList.add(valueArray[i]);
     }
@@ -96,8 +95,8 @@ public class PercentileAggregationFunction implements AggregationFunction<Double
 
   @Override
   public void aggregateGroupBySV(int length, int[] groupKeyArray, GroupByResultHolder groupByResultHolder,
-      Map<String, BlockValSet> blockValSetMap) {
-    double[] valueArray = blockValSetMap.get(_column).getDoubleValuesSV();
+      DataBlock dataBlock) {
+    double[] valueArray = dataBlock.getBlockValueSet(_column).getDoubleValuesSV();
     for (int i = 0; i < length; i++) {
       DoubleArrayList valueList = getValueList(groupByResultHolder, groupKeyArray[i]);
       valueList.add(valueArray[i]);
@@ -106,8 +105,8 @@ public class PercentileAggregationFunction implements AggregationFunction<Double
 
   @Override
   public void aggregateGroupByMV(int length, int[][] groupKeysArray, GroupByResultHolder groupByResultHolder,
-      Map<String, BlockValSet> blockValSetMap) {
-    double[] valueArray = blockValSetMap.get(_column).getDoubleValuesSV();
+      DataBlock dataBlock) {
+    double[] valueArray = dataBlock.getBlockValueSet(_column).getDoubleValuesSV();
     for (int i = 0; i < length; i++) {
       double value = valueArray[i];
       for (int groupKey : groupKeysArray[i]) {

@@ -88,7 +88,7 @@ public class NoDictionaryMultiColumnGroupKeyGenerator implements GroupKeyGenerat
     int numDocs = transformBlock.getNumDocs();
     Object[] values = new Object[_numGroupByExpressions];
     for (int i = 0; i < _numGroupByExpressions; i++) {
-      BlockValSet blockValSet = transformBlock.getBlockValueSet(_groupByExpressions[i]);
+      BlockValSet blockValSet = transformBlock.getBlockValueSet(_groupByExpressions[i].toString());
       if (_dictionaries[i] != null) {
         values[i] = blockValSet.getDictionaryIdsSV();
       } else {

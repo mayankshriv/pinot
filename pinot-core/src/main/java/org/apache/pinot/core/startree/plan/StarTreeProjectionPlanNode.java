@@ -35,15 +35,23 @@ public class StarTreeProjectionPlanNode implements PlanNode {
   private static final Logger LOGGER = LoggerFactory.getLogger(StarTreeProjectionPlanNode.class);
 
   private final Map<String, DataSource> _dataSourceMap;
+
+  // Map between original and aggregation columnName (col1 -> sum_col1)
+  private Map<String, String> _aggregationColumnNameMap;
+
   private final StarTreeDocIdSetPlanNode _starTreeDocIdSetPlanNode;
 
   public StarTreeProjectionPlanNode(StarTreeV2 starTreeV2, Set<String> projectionColumns,
-      @Nullable FilterQueryTree rootFilterNode, @Nullable Set<String> groupByColumns,
-      @Nullable Map<String, String> debugOptions) {
+      Map<String, String> aggregationColumnNameMap, @Nullable FilterQueryTree rootFilterNode,
+      @Nullable Set<String> groupByColumns, @Nullable Map<String, String> debugOptions) {
     _dataSourceMap = new HashMap<>(projectionColumns.size());
+    _aggregationColumnNameMap = aggregationColumnNameMap;
+
     for (String projectionColumn : projectionColumns) {
-      _dataSourceMap.put(projectionColumn, starTreeV2.getDataSource(projectionColumn));
+      // Map original column to data-source, as aggregation functions are not aware of the aggregation column name.
+      _dataSourceMap.put(_aggregationColumnNameMap.get(projectionColumn), starTreeV2.getDataSource(projectionColumn));
     }
+
     _starTreeDocIdSetPlanNode = new StarTreeDocIdSetPlanNode(starTreeV2, rootFilterNode, groupByColumns, debugOptions);
   }
 

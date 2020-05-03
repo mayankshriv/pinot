@@ -186,8 +186,8 @@ public class InnerSegmentAggregationSingleValueQueriesTest extends BaseSingleVal
 
     DataSchema dataSchema = distinctTable.getDataSchema();
     Assert.assertEquals(dataSchema.getColumnNames(), new String[]{"column1"});
-    Assert.assertEquals(dataSchema.getColumnDataTypes(),
-        new DataSchema.ColumnDataType[]{DataSchema.ColumnDataType.INT});
+    Assert
+        .assertEquals(dataSchema.getColumnDataTypes(), new DataSchema.ColumnDataType[]{DataSchema.ColumnDataType.INT});
 
     Iterator<Record> iterator = distinctTable.iterator();
     while (iterator.hasNext()) {

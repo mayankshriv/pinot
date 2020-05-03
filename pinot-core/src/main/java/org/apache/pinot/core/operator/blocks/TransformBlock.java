@@ -21,11 +21,11 @@ package org.apache.pinot.core.operator.blocks;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import org.apache.pinot.common.request.transform.TransformExpressionTree;
-import org.apache.pinot.core.common.Block;
 import org.apache.pinot.core.common.BlockDocIdSet;
 import org.apache.pinot.core.common.BlockDocIdValueSet;
 import org.apache.pinot.core.common.BlockMetadata;
 import org.apache.pinot.core.common.BlockValSet;
+import org.apache.pinot.core.common.DataBlock;
 import org.apache.pinot.core.operator.docvalsets.TransformBlockValSet;
 import org.apache.pinot.core.operator.transform.function.TransformFunction;
 
@@ -34,30 +34,27 @@ import org.apache.pinot.core.operator.transform.function.TransformFunction;
  * Transform Block holds blocks of transformed columns.
  * <p>In absence of transforms, it servers as a pass-through to projection block.
  */
-public class TransformBlock implements Block {
+public class TransformBlock implements DataBlock {
   private final ProjectionBlock _projectionBlock;
-  private final Map<TransformExpressionTree, TransformFunction> _transformFunctionMap;
+  private final Map<String, TransformFunction> _transformFunctionMap;
 
   public TransformBlock(@Nonnull ProjectionBlock projectionBlock,
-      @Nonnull Map<TransformExpressionTree, TransformFunction> transformFunctionMap) {
+      @Nonnull Map<String, TransformFunction> transformFunctionMap) {
     _projectionBlock = projectionBlock;
     _transformFunctionMap = transformFunctionMap;
   }
 
+  @Override
   public int getNumDocs() {
     return _projectionBlock.getNumDocs();
   }
 
-  public BlockValSet getBlockValueSet(TransformExpressionTree expression) {
-    if (expression.isColumn()) {
-      return _projectionBlock.getBlockValueSet(expression.getValue());
-    } else {
-      return new TransformBlockValSet(_projectionBlock, _transformFunctionMap.get(expression));
-    }
-  }
-
-  public BlockValSet getBlockValueSet(String column) {
-    return _projectionBlock.getBlockValueSet(column);
+  @Override
+  public BlockValSet getBlockValueSet(String expression) {
+    // If not in transformFunctionMap, then this is a column.
+    TransformFunction transformFunction = _transformFunctionMap.get(expression);
+    return (transformFunction != null) ? new TransformBlockValSet(_projectionBlock, transformFunction)
+        : _projectionBlock.getBlockValueSet(expression);
   }
 
   @Override
@@ -80,7 +77,7 @@ public class TransformBlock implements Block {
     throw new UnsupportedOperationException();
   }
 
-  public DocIdSetBlock getDocIdSetBlock(){
+  public DocIdSetBlock getDocIdSetBlock() {
     return _projectionBlock.getDocIdSetBlock();
   }
 }

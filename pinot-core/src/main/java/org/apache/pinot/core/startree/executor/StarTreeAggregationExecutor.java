@@ -57,12 +57,7 @@ public class StarTreeAggregationExecutor extends DefaultAggregationExecutor {
     for (int i = 0; i < _numFunctions; i++) {
       AggregationFunction function = _functions[i];
       AggregationResultHolder resultHolder = _resultHolders[i];
-
-      BlockValSet blockValueSet = (function.getType() == AggregationFunctionType.COUNT) ? transformBlock
-          .getBlockValueSet(AggregationFunctionColumnPair.COUNT_STAR_COLUMN_NAME) :
-
-          transformBlock.getBlockValueSet(_expressions[i].getValue());
-      function.aggregate(length, resultHolder, Collections.singletonMap(_functionArgs[i], blockValueSet));
+      function.aggregate(length, resultHolder, transformBlock);
     }
   }
 }

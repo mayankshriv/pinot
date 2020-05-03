@@ -134,7 +134,7 @@ public class DictionaryBasedGroupKeyGenerator implements GroupKeyGenerator {
   public void generateKeysForBlock(@Nonnull TransformBlock transformBlock, @Nonnull int[] groupKeys) {
     // Fetch dictionary ids in the given block for all group-by columns
     for (int i = 0; i < _numGroupByExpressions; i++) {
-      BlockValSet blockValueSet = transformBlock.getBlockValueSet(_groupByExpressions[i]);
+      BlockValSet blockValueSet = transformBlock.getBlockValueSet(_groupByExpressions[i].toString());
       _singleValueDictIds[i] = blockValueSet.getDictionaryIdsSV();
     }
 
@@ -145,7 +145,7 @@ public class DictionaryBasedGroupKeyGenerator implements GroupKeyGenerator {
   public void generateKeysForBlock(@Nonnull TransformBlock transformBlock, @Nonnull int[][] groupKeys) {
     // Fetch dictionary ids in the given block for all group-by columns
     for (int i = 0; i < _numGroupByExpressions; i++) {
-      BlockValSet blockValueSet = transformBlock.getBlockValueSet(_groupByExpressions[i]);
+      BlockValSet blockValueSet = transformBlock.getBlockValueSet(_groupByExpressions[i].toString());
       if (_isSingleValueColumn[i]) {
         _singleValueDictIds[i] = blockValueSet.getDictionaryIdsSV();
       } else {

@@ -76,7 +76,7 @@ public class SelectionOnlyOperator extends BaseOperator<IntermediateResultsBlock
     while ((transformBlock = _transformOperator.nextBlock()) != null) {
       int numExpressions = _expressions.size();
       for (int i = 0; i < numExpressions; i++) {
-        _blockValSets[i] = transformBlock.getBlockValueSet(_expressions.get(i));
+        _blockValSets[i] = transformBlock.getBlockValueSet(_expressions.get(i).toString());
       }
       RowBasedBlockValueFetcher blockValueFetcher = new RowBasedBlockValueFetcher(_blockValSets);
 
