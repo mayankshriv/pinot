@@ -138,6 +138,7 @@ public class DefaultGroupByExecutor implements GroupByExecutor {
     } else {
       aggregationFunction.aggregateGroupBySV(length, _svGroupKeys, groupByResultHolder, blockValSetMap);
     }
+    long end = System.currentTimeMillis();
   }
 
   @Override

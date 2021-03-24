@@ -317,4 +317,14 @@ public class CreateSegmentCommand extends AbstractBaseAdminCommand implements Co
         throw new IllegalStateException("Unsupported file format for segment creation: " + _format);
     }
   }
+
+  public static void main(String[] args)
+      throws Exception {
+    CreateSegmentCommand cmd = new CreateSegmentCommand();
+    cmd.setDataDir("/Users/mayank/customers/experienceFLow/data/").setOverwrite(true)
+        .setOutDir("/Users/mayank/customers/experienceFLow/out").setFormat(FileFormat.JSON)
+        .setTableConfigFile("/Users/mayank/customers/experienceFLow/tableConfig.json")
+        .setSchemaFile("/Users/mayank/customers/experienceFLow/schema.json");
+    cmd.execute();
+  }
 }

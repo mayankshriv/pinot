@@ -27,6 +27,8 @@ import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.ObjectIterator;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.concurrent.ThreadLocalRandom;
+
 import org.apache.pinot.core.common.BlockValSet;
 import org.apache.pinot.core.operator.blocks.TransformBlock;
 import org.apache.pinot.core.operator.transform.TransformOperator;
@@ -1115,6 +1117,31 @@ public class DictionaryBasedGroupKeyGenerator implements GroupKeyGenerator {
         }
       }
       return true;
+    }
+  }
+
+  public static void main(String[] args) {
+    IntGroupIdMap map = new IntGroupIdMap();
+    int M = 1_000_000;
+    int N = 10_000_000;
+    int K = 100_000_000;
+    int[] rawKeys = new int[N];
+
+    for (int i = 0; i < N; i++) {
+      rawKeys[i] = ThreadLocalRandom.current().nextInt(M);
+    }
+
+    for (int j = 0; j < 1; j++) {
+      long start = System.currentTimeMillis();
+      for (int i = 0; i < N; i++) {
+        map.getGroupId(rawKeys[i], K);
+      }
+      System.out.println("Total time: " + (System.currentTimeMillis() - start));
+    }
+
+    Iterator<IntGroupIdMap.Entry> iterator = map.iterator();
+    while (iterator.hasNext()) {
+      iterator.next();
     }
   }
 }

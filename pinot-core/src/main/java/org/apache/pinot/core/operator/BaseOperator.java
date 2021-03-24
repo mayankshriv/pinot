@@ -37,13 +37,18 @@ public abstract class BaseOperator<T extends Block> implements Operator<T> {
     if (Thread.interrupted()) {
       throw new EarlyTerminationException();
     }
-    if (TraceContext.traceEnabled()) {
+    if (true || TraceContext.traceEnabled()) {
       long start = System.currentTimeMillis();
       T nextBlock = getNextBlock();
       long end = System.currentTimeMillis();
       String operatorName = getOperatorName();
-      LOGGER.trace("Time spent in {}: {}", operatorName, (end - start));
-      TraceContext.logTime(operatorName, (end - start));
+//      LOGGER.trace("Time spent in {}: {}", operatorName, (end - start));
+
+      long time = end - start;
+      if (time > 10) {
+        System.out.println("Time spent in " + operatorName + ": " + time);
+      }
+//      TraceContext.logTime(operatorName, (end - start));
       return nextBlock;
     } else {
       return getNextBlock();

@@ -155,9 +155,10 @@ public class ConcurrentIndexedTable extends IndexedTable {
       }
       int numResizes = _numResizes.get();
       long resizeTime = _resizeTimeMs.get();
-      LOGGER.debug(
+      LOGGER.info(
           "Num resizes : {}, Total time spent in resizing : {}, Avg resize time : {}, trimSize: {}, trimThreshold: {}",
           numResizes, resizeTime, numResizes == 0 ? 0 : resizeTime / numResizes, _trimSize, _trimThreshold);
+      System.out.println("Num resizes: " + numResizes + "Resize time: " + resizeTime);
     }
     if (_iterator == null) {
       _iterator = _lookupMap.values().iterator();
