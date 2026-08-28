@@ -24,7 +24,6 @@ import com.google.protobuf.Descriptors;
 import com.google.protobuf.DynamicMessage;
 import com.google.protobuf.Message;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.Map;
 import java.util.Set;
 import org.apache.commons.lang3.StringUtils;
@@ -48,19 +47,18 @@ public class ProtoBufMessageDecoder implements StreamMessageDecoder<byte[]> {
         "Protocol Buffer schema descriptor file must be provided");
 
     _protoClassName = props.getOrDefault(PROTO_CLASS_NAME, "");
-    InputStream descriptorFileInputStream = ProtoBufUtils.getDescriptorFileInputStream(
-        props.get(DESCRIPTOR_FILE_PATH));
-    Descriptors.Descriptor descriptor = buildProtoBufDescriptor(descriptorFileInputStream);
+    byte[] descriptorBytes = ProtoBufUtils.readDescriptorFileBytes(props.get(DESCRIPTOR_FILE_PATH));
+    Descriptors.Descriptor descriptor = buildProtoBufDescriptor(descriptorBytes);
     _recordExtractor = new ProtoBufRecordExtractor();
     _recordExtractor.init(fieldsToRead, null);
     DynamicMessage dynamicMessage = DynamicMessage.getDefaultInstance(descriptor);
     _builder = dynamicMessage.newBuilderForType();
   }
 
-  private Descriptors.Descriptor buildProtoBufDescriptor(InputStream fin)
+  private Descriptors.Descriptor buildProtoBufDescriptor(byte[] descriptorBytes)
       throws IOException {
     try {
-      DynamicSchema dynamicSchema = DynamicSchema.parseFrom(fin);
+      DynamicSchema dynamicSchema = DynamicSchema.parseFrom(descriptorBytes);
 
       if (!StringUtils.isEmpty(_protoClassName)) {
         return dynamicSchema.getMessageDescriptor(_protoClassName);

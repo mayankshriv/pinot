@@ -24,18 +24,32 @@ import com.google.protobuf.Message;
 import java.io.File;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Arrays;
 import java.util.Map;
 import java.util.Set;
 import org.apache.pinot.plugin.inputformat.protobuf.codegen.MessageCodeGen;
 import org.apache.pinot.spi.data.readers.GenericRow;
+import org.apache.pinot.spi.filesystem.PinotFS;
+import org.apache.pinot.spi.filesystem.PinotFSFactory;
 import org.apache.pinot.spi.stream.StreamMessageDecoder;
 import org.codehaus.janino.SimpleCompiler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
+/// Protobuf stream decoder that uses Janino-compiled code for extraction. The generated code is compiled at
+/// init time from the protobuf descriptor found in the user-supplied JAR. The [URLClassLoader] and its backing
+/// JAR file must remain available for the lifetime of this decoder because the JVM may lazily resolve classes
+/// referenced by the generated code at decode time. Since [StreamMessageDecoder] does not extend
+/// [java.io.Closeable], these resources are not explicitly released.
 public class ProtoBufCodeGenMessageDecoder implements StreamMessageDecoder<byte[]> {
+  private static final Logger LOGGER = LoggerFactory.getLogger(ProtoBufCodeGenMessageDecoder.class);
+
   public static final String PROTOBUF_JAR_FILE_PATH = "jarFile";
   public static final String PROTO_CLASS_NAME = "protoClassName";
   private Method _decodeMethod;
@@ -49,12 +63,18 @@ public class ProtoBufCodeGenMessageDecoder implements StreamMessageDecoder<byte[
         "Protocol Buffer Message class name must be provided");
     String protoClassName = props.getOrDefault(PROTO_CLASS_NAME, "");
     String jarPath = props.getOrDefault(PROTOBUF_JAR_FILE_PATH, "");
-    ClassLoader protoMessageClsLoader = loadClass(jarPath);
+    File jarFile = resolveToLocalFile(jarPath);
+    ClassLoader protoMessageClsLoader = createClassLoader(jarFile);
     Descriptors.Descriptor descriptor = getDescriptorForProtoClass(protoMessageClsLoader, protoClassName);
     String codeGenCode = new MessageCodeGen().codegen(descriptor, fieldsToRead);
     Class<?> recordExtractor = compileClass(protoMessageClsLoader,
         MessageCodeGen.EXTRACTOR_PACKAGE_NAME + "." + MessageCodeGen.EXTRACTOR_CLASS_NAME, codeGenCode);
     _decodeMethod = recordExtractor.getMethod(MessageCodeGen.EXTRACTOR_METHOD_NAME, byte[].class, GenericRow.class);
+    // NOTE: Do NOT close the URLClassLoader or delete the JAR file. The generated code may trigger
+    // lazy class resolution at decode time via the classloader chain (Janino -> URLClassLoader -> JAR).
+    // Closing prematurely would cause NoClassDefFoundError. For local JARs there is nothing to
+    // clean up. For remote JARs, the temp directory persists for the lifetime of this decoder
+    // (StreamMessageDecoder does not extend Closeable).
   }
 
   @Override
@@ -75,12 +95,10 @@ public class ProtoBufCodeGenMessageDecoder implements StreamMessageDecoder<byte[
     return decode(payload, destination);
   }
 
-  public static ClassLoader loadClass(String jarFilePath) {
+  public static ClassLoader createClassLoader(File jarFile) {
     try {
-      File file = ProtoBufUtils.getFileCopiedToLocal(jarFilePath);
-      URL url = file.toURI().toURL();
-      URL[] urls = new URL[]{url};
-      return new URLClassLoader(urls);
+      URL url = jarFile.toURI().toURL();
+      return new URLClassLoader(new URL[]{url});
     } catch (Exception e) {
       throw new RuntimeException("Error loading protobuf class", e);
     }
@@ -103,5 +121,25 @@ public class ProtoBufCodeGenMessageDecoder implements StreamMessageDecoder<byte[
       throws NoSuchMethodException, ClassNotFoundException, InvocationTargetException, IllegalAccessException {
     Class<? extends Message> updateMessage = (Class<Message>) protoMessageClsLoader.loadClass(protoClassName);
     return (Descriptors.Descriptor) updateMessage.getMethod("getDescriptor").invoke(null);
+  }
+
+  /// Resolves a file path (URI string) to a local [File]. For local files (no scheme or `file://` scheme),
+  /// the original file is returned directly. For remote files, the file is copied to a local temporary
+  /// directory. The caller is responsible for the lifetime of the returned file - for remote files, the
+  /// backing temp directory is intentionally NOT cleaned up because the JAR must remain accessible for
+  /// lazy class loading at decode time.
+  private static File resolveToLocalFile(String filePath)
+      throws Exception {
+    URI fileURI = URI.create(filePath);
+    String scheme = fileURI.getScheme();
+    if (scheme == null || PinotFSFactory.LOCAL_PINOT_FS_SCHEME.equals(scheme)) {
+      return new File(fileURI.getPath());
+    }
+    PinotFS pinotFS = PinotFSFactory.create(scheme);
+    Path localTmpDir = Files.createTempDirectory(ProtoBufUtils.TMP_DIR_PREFIX);
+    File localFile = new File(localTmpDir.toFile(), new File(fileURI.getPath()).getName());
+    LOGGER.info("Copying protocol buffer JAR from {} to {}", filePath, localFile.getAbsolutePath());
+    pinotFS.copyToLocalFile(fileURI, localFile);
+    return localFile;
   }
 }

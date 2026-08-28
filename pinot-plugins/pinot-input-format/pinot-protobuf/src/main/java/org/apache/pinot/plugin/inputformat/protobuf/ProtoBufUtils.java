@@ -20,57 +20,34 @@ package org.apache.pinot.plugin.inputformat.protobuf;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.ProtobufInternalUtils;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import org.apache.pinot.spi.filesystem.PinotFS;
 import org.apache.pinot.spi.filesystem.PinotFSFactory;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class ProtoBufUtils {
-  private static final Logger LOGGER = LoggerFactory.getLogger(ProtoBufUtils.class);
   public static final String TMP_DIR_PREFIX = "pinot-protobuf";
   public static final String PB_OUTER_CLASS_SUFFIX = "OuterClass";
 
   private ProtoBufUtils() {
   }
 
-  public static File getFileCopiedToLocal(String filePath)
+  /// Reads the contents of a descriptor file (local or remote) into a byte array. The file is read via
+  /// [PinotFS#open] and the stream is closed before returning - no temporary files are created.
+  ///
+  /// @param descriptorFilePath URI string pointing to a `.desc` protobuf descriptor file
+  /// @return the raw bytes of the descriptor file
+  public static byte[] readDescriptorFileBytes(String descriptorFilePath)
       throws Exception {
-    URI fileURI = URI.create(filePath);
+    URI fileURI = URI.create(descriptorFilePath);
     String scheme = fileURI.getScheme();
     if (scheme == null) {
       scheme = PinotFSFactory.LOCAL_PINOT_FS_SCHEME;
     }
-    if (PinotFSFactory.isSchemeSupported(scheme)) {
-      PinotFS pinotFS = PinotFSFactory.create(scheme);
-      Path localTmpDir = Files.createTempDirectory(TMP_DIR_PREFIX + System.currentTimeMillis());
-      File localFile = createLocalFile(fileURI, localTmpDir.toFile());
-      LOGGER.info("Copying protocol buffer jar/descriptor file from source: {} to dst: {}", filePath,
-          localFile.getAbsolutePath());
-      pinotFS.copyToLocalFile(fileURI, localFile);
-      return localFile;
-    } else {
-      throw new RuntimeException(String.format("Scheme: %s not supported in PinotFSFactory"
-          + " for protocol buffer jar/descriptor file: %s.", scheme, filePath));
+    PinotFS pinotFS = PinotFSFactory.create(scheme);
+    try (InputStream in = pinotFS.open(fileURI)) {
+      return in.readAllBytes();
     }
-  }
-
-  public static InputStream getDescriptorFileInputStream(String descriptorFilePath)
-      throws Exception {
-    return new FileInputStream(getFileCopiedToLocal(descriptorFilePath));
-  }
-
-  public static File createLocalFile(URI srcURI, File dstDir) {
-    String sourceURIPath = srcURI.getPath();
-    File dstFile = new File(dstDir, new File(sourceURIPath).getName());
-    LOGGER.debug("Created empty local temporary file {} to copy protocol "
-        + "buffer descriptor {}", dstFile.getAbsolutePath(), srcURI);
-    return dstFile;
   }
 
   public static String getFullJavaName(Descriptors.Descriptor descriptor) {
